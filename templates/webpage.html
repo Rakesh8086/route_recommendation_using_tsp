@@ -35,24 +35,27 @@
         <h1 align="center">Route Optimization Service</h1>
         <h2 align="center">A Close Quarters Studios Product</h2>
         <h3 align="center">Powered by Google Maps API</h3>
-        <div class="form-group">
-            <label for="numStops">Select Number of Stops:</label>
-            <select id="numStops">
-                <option value="0">Select...</option>
-                <option value="2">2</option>
-                <option value="3">3</option>
-                <option value="4">4</option>
-                <option value="5">5</option>
-                <option value="6">6</option>
-                <option value="7">7</option>
-                <option value="8">8</option>
-                <option value="9">9</option>
-                <option value="10">10</option>
-            </select>
-        </div>
-        <div class="inputs-container" id="inputsContainer">
-            <!-- Dynamic input boxes will be inserted here -->
-        </div>
+        <form id="routeForm" action="/submit" method="post">
+            <div class="form-group">
+                <label for="numStops">Select Number of Stops:</label>
+                <select id="numStops" name="numStops">
+                    <option value="0">Select...</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                    <option value="9">9</option>
+                    <option value="10">10</option>
+                </select>
+            </div>
+            <div class="inputs-container" id="inputsContainer">
+                <!-- Dynamic input boxes will be inserted here -->
+            </div>
+            <button type="submit">Submit</button>
+        </form>
     </div>
 
     <script>
@@ -60,10 +63,10 @@
             const numStops = parseInt(this.value);
             const container = document.getElementById('inputsContainer');
 
-            // Clear previous inputs
+            // Clears previous inputs
             container.innerHTML = '';
 
-            // Generate new inputs based on the number of stops
+            // Generates new input boxes depending upon number of stops
             for (let i = 0; i < numStops; i++) {
                 const inputGroup = document.createElement('div');
                 inputGroup.className = 'form-group';
@@ -73,6 +76,7 @@
 
                 const input = document.createElement('input');
                 input.type = 'text';
+                input.name = `location${i + 1}`;  // Ensure unique names for each input
                 input.placeholder = `Enter location ${i + 1}`;
 
                 inputGroup.appendChild(label);
