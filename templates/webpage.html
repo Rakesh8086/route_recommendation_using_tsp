@@ -28,6 +28,10 @@
         .inputs-container {
             margin-top: 20px;
         }
+        .error {
+            color: red;
+            font-size: 0.875em;
+        }
     </style>
 </head>
 <body>
@@ -38,7 +42,7 @@
         <form id="routeForm" action="/submit" method="post">
             <div class="form-group">
                 <label for="numStops">Select Number of Stops:</label>
-                <select id="numStops" name="numStops">
+                <select id="numStops" name="numStops" required>
                     <option value="0">Select...</option>
                     <option value="2">2</option>
                     <option value="3">3</option>
@@ -54,6 +58,7 @@
             <div class="inputs-container" id="inputsContainer">
                 <!-- Dynamic input boxes will be inserted here -->
             </div>
+            <div id="formError" class="error"></div>
             <button type="submit">Submit</button>
         </form>
     </div>
@@ -62,9 +67,11 @@
         document.getElementById('numStops').addEventListener('change', function() {
             const numStops = parseInt(this.value);
             const container = document.getElementById('inputsContainer');
+            const formError = document.getElementById('formError');
 
-            // Clears previous inputs
+            // Clears previous inputs and error messages
             container.innerHTML = '';
+            formError.textContent = '';
 
             // Generates new input boxes depending upon number of stops
             for (let i = 0; i < numStops; i++) {
@@ -78,11 +85,32 @@
                 input.type = 'text';
                 input.name = `location${i + 1}`;  // Ensure unique names for each input
                 input.placeholder = `Enter location ${i + 1}`;
+                input.required = true;  // Mark input as required
 
                 inputGroup.appendChild(label);
                 inputGroup.appendChild(input);
 
                 container.appendChild(inputGroup);
+            }
+        });
+
+        // Validate form before submission
+        document.getElementById('routeForm').addEventListener('submit', function(event) {
+            const numStops = parseInt(document.getElementById('numStops').value);
+            const inputs = document.querySelectorAll('.inputs-container input');
+            let isValid = true;
+            const formError = document.getElementById('formError');
+
+            // Check if all input fields are filled
+            inputs.forEach(input => {
+                if (input.value.trim() === '') {
+                    isValid = false;
+                }
+            });
+
+            if (!isValid) {
+                event.preventDefault();  // Prevent form submission
+                formError.textContent = 'Please fill out all location fields.';
             }
         });
     </script>
