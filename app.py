@@ -1,5 +1,5 @@
 import numpy as np
-from flask import Flask, request, render_template
+from flask import Flask, render_template, request, redirect, url_for
 from city_dataframe_generation import generate_city_permutations
 from config import api_key
 from call_api_to_get_data import get_distance_and_duration
@@ -67,7 +67,10 @@ def submit():
         city_id_dictionary = city_dataframe[['city_id', 'source']].drop_duplicates().set_index(['city_id'])['source'].to_dict()
         optimal_route = optimal_route_creation(city_id_dictionary, optimal_route_order)
 
-    return 'Data received and processed.'
+    optimal_route = replace_spaces_with_underscores_in_city_names(optimal_route)
+    google_maps_url = generate_google_maps_url(optimal_route)
+
+    return render_template('webpage.html', url=google_maps_url,num_stops=num_stops, locations=cities, route_type=route_chosen)
 
 if __name__ == '__main__':
     app.run(debug=True)
