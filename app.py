@@ -19,6 +19,7 @@ def webpage():
 @app.route('/submit', methods=['POST', 'GET'])
 def submit():
     num_stops = request.form.get('numStops')
+    num_stops = int(num_stops)
     cities = [request.form.get(f'location{i + 1}') for i in range(int(num_stops))]  # Get the list of cities from the form
     route_chosen = request.form.get('routeType')
 
