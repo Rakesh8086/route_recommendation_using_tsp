@@ -1,8 +1,14 @@
+import numpy as np
 from flask import Flask, request, render_template
 from city_dataframe_generation import generate_city_permutations
 from config import api_key
 from call_api_to_get_data import get_distance_and_duration
 from matrix_creation import create_distance_matrix
+from matrix_creation import create_duration_matrix
+from python_tsp.exact import solve_tsp_dynamic_programming
+from create_optimal_route import optimal_route_creation
+from clean_city_names_for_google_maps import replace_spaces_with_underscores_in_city_names
+from create_web_url import generate_google_maps_url
 
 app = Flask(__name__)
 
@@ -14,10 +20,13 @@ def webpage():
 def submit():
     num_stops = request.form.get('numStops')
     cities = [request.form.get(f'location{i + 1}') for i in range(int(num_stops))]  # Get the list of cities from the form
+    route_chosen = request.form.get('routeType')
 
     # Check if cities list is not empty
     if not cities:
         return "No cities provided", 400
+    if not route_chosen:
+        return "No route type provided", 400
 
     city_dataframe = generate_city_permutations(cities)
 
@@ -41,7 +50,22 @@ def submit():
             city_dataframe.at[index, 'distance_number'] = distance_value
             city_dataframe.at[index, 'duration_number'] = duration_value
 
-    print(city_dataframe)
+    optimal_route = []
+    if route_chosen == "shortest":
+        distance_dictionary = city_dataframe.set_index(['source', 'destination'])['distance_number'].to_dict()
+        distance_matrix = create_distance_matrix(city_dataframe, distance_dictionary)
+        distance_matrix = np.array(distance_matrix)
+        optimal_route_order, total_distance = solve_tsp_dynamic_programming(distance_matrix)
+        city_id_dictionary = city_dataframe[['city_id', 'source']].drop_duplicates().set_index(['city_id'])['source'].to_dict()
+        optimal_route = optimal_route_creation(city_id_dictionary, optimal_route_order)
+
+    elif route_chosen == "fastest":
+        duration_dictionary = city_dataframe.set_index(['source', 'destination'])['duration_number'].to_dict()
+        duration_matrix = create_duration_matrix(city_dataframe, duration_dictionary)
+        duration_matrix = np.array(duration_matrix)
+        optimal_route_order, total_duration = solve_tsp_dynamic_programming(duration_matrix)
+        city_id_dictionary = city_dataframe[['city_id', 'source']].drop_duplicates().set_index(['city_id'])['source'].to_dict()
+        optimal_route = optimal_route_creation(city_id_dictionary, optimal_route_order)
 
     return 'Data received and processed.'
 
