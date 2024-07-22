@@ -32,6 +32,12 @@
             color: red;
             font-size: 0.875em;
         }
+        .url-display {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            background-color: #f9f9f9;
+        }
     </style>
 </head>
 <body>
@@ -43,32 +49,45 @@
             <div class="form-group">
                 <label for="numStops">Select Number of Stops:</label>
                 <select id="numStops" name="numStops" required>
-                    <option value="0">Select...</option>
-                    <option value="2">2</option>
-                    <option value="3">3</option>
-                    <option value="4">4</option>
-                    <option value="5">5</option>
-                    <option value="6">6</option>
-                    <option value="7">7</option>
-                    <option value="8">8</option>
-                    <option value="9">9</option>
-                    <option value="10">10</option>
+                    <option value="0" {% if num_stops == 0 %}selected{% endif %}>Select...</option>
+                    <option value="2" {% if num_stops == 2 %}selected{% endif %}>2</option>
+                    <option value="3" {% if num_stops == 3 %}selected{% endif %}>3</option>
+                    <option value="4" {% if num_stops == 4 %}selected{% endif %}>4</option>
+                    <option value="5" {% if num_stops == 5 %}selected{% endif %}>5</option>
+                    <option value="6" {% if num_stops == 6 %}selected{% endif %}>6</option>
+                    <option value="7" {% if num_stops == 7 %}selected{% endif %}>7</option>
+                    <option value="8" {% if num_stops == 8 %}selected{% endif %}>8</option>
+                    <option value="9" {% if num_stops == 9 %}selected{% endif %}>9</option>
+                    <option value="10" {% if num_stops == 10 %}selected{% endif %}>10</option>
                 </select>
+            </div>
+            <div class="inputs-container" id="inputsContainer">
+                {% if num_stops %}
+                    {% for i in range(num_stops) %}
+                        <div class="form-group">
+                            <label for="location{{ i+1 }}">Location {{ i+1 }}:</label>
+                            <input type="text" name="location{{ i+1 }}" value="{{ locations[i] if locations and locations[i] else '' }}" placeholder="Enter location {{ i+1 }}" required>
+                        </div>
+                    {% endfor %}
+                {% endif %}
             </div>
             <div class="form-group">
                 <label for="routeType">Select Route Type:</label>
                 <select id="routeType" name="routeType" required>
-                    <option value="">Select...</option>
-                    <option value="shortest">Shortest Route</option>
-                    <option value="fastest">Fastest Route</option>
+                    <option value="" {% if not route_type %}selected{% endif %}>Select...</option>
+                    <option value="shortest" {% if route_type == 'shortest' %}selected{% endif %}>Shortest Route</option>
+                    <option value="fastest" {% if route_type == 'fastest' %}selected{% endif %}>Fastest Route</option>
                 </select>
-            </div>
-            <div class="inputs-container" id="inputsContainer">
-                <!-- Dynamic input boxes will be inserted here -->
             </div>
             <div id="formError" class="error"></div>
             <button type="submit">Submit</button>
         </form>
+
+        {% if url %}
+        <div class="url-display">
+            <p>Generated Route URL: <a href="{{ url }}" target="_blank">{{ url }}</a></p>
+        </div>
+        {% endif %}
     </div>
 
     <script>
@@ -76,77 +95,68 @@
             generateInputFields();
         });
 
-    // Generate input fields based on number of stops
-    function generateInputFields() {
-        const numStops = parseInt(document.getElementById('numStops').value);
-        const container = document.getElementById('inputsContainer');
-        const formError = document.getElementById('formError');
+        function generateInputFields() {
+            const numStops = parseInt(document.getElementById('numStops').value);
+            const container = document.getElementById('inputsContainer');
+            const formError = document.getElementById('formError');
 
-        // Clears previous inputs and error messages
-        container.innerHTML = '';
-        formError.textContent = '';
+            container.innerHTML = '';
+            formError.textContent = '';
 
-        if (isNaN(numStops) || numStops === 0) {
-            return;
+            if (isNaN(numStops) || numStops === 0) {
+                return;
+            }
+
+            for (let i = 0; i < numStops; i++) {
+                const inputGroup = document.createElement('div');
+                inputGroup.className = 'form-group';
+
+                const label = document.createElement('label');
+                label.textContent = `Location ${i + 1}:`;
+
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.name = `location${i + 1}`;
+                input.placeholder = `Enter location ${i + 1}`;
+                input.required = true;
+
+                inputGroup.appendChild(label);
+                inputGroup.appendChild(input);
+
+                container.appendChild(inputGroup);
+            }
         }
 
-        // Generates new input boxes depending upon number of stops
-        for (let i = 0; i < numStops; i++) {
-            const inputGroup = document.createElement('div');
-            inputGroup.className = 'form-group';
+        document.getElementById('routeForm').addEventListener('submit', function(event) {
+            const numStops = parseInt(document.getElementById('numStops').value);
+            const routeType = document.getElementById('routeType').value;
+            const inputs = document.querySelectorAll('.inputs-container input');
+            let isValid = true;
+            const formError = document.getElementById('formError');
 
-            const label = document.createElement('label');
-            label.textContent = `Location ${i + 1}:`;
-
-            const input = document.createElement('input');
-            input.type = 'text';
-            input.name = `location${i + 1}`;  // Ensure unique names for each input
-            input.placeholder = `Enter location ${i + 1}`;
-            input.required = true;  // Mark input as required
-
-            inputGroup.appendChild(label);
-            inputGroup.appendChild(input);
-
-            container.appendChild(inputGroup);
-        }
-    }
-
-    // Validate form before submission
-    document.getElementById('routeForm').addEventListener('submit', function(event) {
-        const numStops = parseInt(document.getElementById('numStops').value);
-        const routeType = document.getElementById('routeType').value;
-        const inputs = document.querySelectorAll('.inputs-container input');
-        let isValid = true;
-        const formError = document.getElementById('formError');
-
-        // Check if number of stops is selected
-        if (isNaN(numStops) || numStops === 0) {
-            isValid = false;
-        }
-
-        // Check if all input fields are filled
-        inputs.forEach(input => {
-            if (input.value.trim() === '') {
+            if (isNaN(numStops) || numStops === 0) {
                 isValid = false;
+            }
+
+            inputs.forEach(input => {
+                if (input.value.trim() === '') {
+                    isValid = false;
+                }
+            });
+
+            if (routeType === '') {
+                isValid = false;
+            }
+
+            if (!isValid) {
+                event.preventDefault();
+                formError.textContent = 'Please fill out all fields, select number of stops, and select a route type.';
             }
         });
 
-        // Check if route type is selected
-        if (routeType === '') {
-            isValid = false;
-        }
-
-        if (!isValid) {
-            event.preventDefault();  // Prevent form submission
-            formError.textContent = 'Please fill out all fields, select number of stops and select a route type.';
-        }
-    });
-
-    // Initialize input fields based on previous selection
-    document.addEventListener('DOMContentLoaded', function() {
-        generateInputFields();
-    });
-
+        document.addEventListener('DOMContentLoaded', function() {
+            generateInputFields();
+        });
     </script>
 </body>
 </html>
