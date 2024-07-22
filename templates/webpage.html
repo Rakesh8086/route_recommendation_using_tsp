@@ -55,6 +55,14 @@
                     <option value="10">10</option>
                 </select>
             </div>
+            <div class="form-group">
+                <label for="routeType">Select Route Type:</label>
+                <select id="routeType" name="routeType" required>
+                    <option value="">Select...</option>
+                    <option value="shortest">Shortest Route</option>
+                    <option value="fastest">Fastest Route</option>
+                </select>
+            </div>
             <div class="inputs-container" id="inputsContainer">
                 <!-- Dynamic input boxes will be inserted here -->
             </div>
@@ -65,54 +73,80 @@
 
     <script>
         document.getElementById('numStops').addEventListener('change', function() {
-            const numStops = parseInt(this.value);
-            const container = document.getElementById('inputsContainer');
-            const formError = document.getElementById('formError');
+            generateInputFields();
+        });
 
-            // Clears previous inputs and error messages
-            container.innerHTML = '';
-            formError.textContent = '';
+    // Generate input fields based on number of stops
+    function generateInputFields() {
+        const numStops = parseInt(document.getElementById('numStops').value);
+        const container = document.getElementById('inputsContainer');
+        const formError = document.getElementById('formError');
 
-            // Generates new input boxes depending upon number of stops
-            for (let i = 0; i < numStops; i++) {
-                const inputGroup = document.createElement('div');
-                inputGroup.className = 'form-group';
+        // Clears previous inputs and error messages
+        container.innerHTML = '';
+        formError.textContent = '';
 
-                const label = document.createElement('label');
-                label.textContent = `Location ${i + 1}:`;
+        if (isNaN(numStops) || numStops === 0) {
+            return;
+        }
 
-                const input = document.createElement('input');
-                input.type = 'text';
-                input.name = `location${i + 1}`;  // Ensure unique names for each input
-                input.placeholder = `Enter location ${i + 1}`;
-                input.required = true;  // Mark input as required
+        // Generates new input boxes depending upon number of stops
+        for (let i = 0; i < numStops; i++) {
+            const inputGroup = document.createElement('div');
+            inputGroup.className = 'form-group';
 
-                inputGroup.appendChild(label);
-                inputGroup.appendChild(input);
+            const label = document.createElement('label');
+            label.textContent = `Location ${i + 1}:`;
 
-                container.appendChild(inputGroup);
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.name = `location${i + 1}`;  // Ensure unique names for each input
+            input.placeholder = `Enter location ${i + 1}`;
+            input.required = true;  // Mark input as required
+
+            inputGroup.appendChild(label);
+            inputGroup.appendChild(input);
+
+            container.appendChild(inputGroup);
+        }
+    }
+
+    // Validate form before submission
+    document.getElementById('routeForm').addEventListener('submit', function(event) {
+        const numStops = parseInt(document.getElementById('numStops').value);
+        const routeType = document.getElementById('routeType').value;
+        const inputs = document.querySelectorAll('.inputs-container input');
+        let isValid = true;
+        const formError = document.getElementById('formError');
+
+        // Check if number of stops is selected
+        if (isNaN(numStops) || numStops === 0) {
+            isValid = false;
+        }
+
+        // Check if all input fields are filled
+        inputs.forEach(input => {
+            if (input.value.trim() === '') {
+                isValid = false;
             }
         });
 
-        // Validate form before submission
-        document.getElementById('routeForm').addEventListener('submit', function(event) {
-            const numStops = parseInt(document.getElementById('numStops').value);
-            const inputs = document.querySelectorAll('.inputs-container input');
-            let isValid = true;
-            const formError = document.getElementById('formError');
+        // Check if route type is selected
+        if (routeType === '') {
+            isValid = false;
+        }
 
-            // Check if all input fields are filled
-            inputs.forEach(input => {
-                if (input.value.trim() === '') {
-                    isValid = false;
-                }
-            });
+        if (!isValid) {
+            event.preventDefault();  // Prevent form submission
+            formError.textContent = 'Please fill out all fields, select number of stops and select a route type.';
+        }
+    });
 
-            if (!isValid) {
-                event.preventDefault();  // Prevent form submission
-                formError.textContent = 'Please fill out all location fields.';
-            }
-        });
+    // Initialize input fields based on previous selection
+    document.addEventListener('DOMContentLoaded', function() {
+        generateInputFields();
+    });
+
     </script>
 </body>
 </html>
