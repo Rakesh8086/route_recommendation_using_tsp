@@ -16,12 +16,21 @@ app = Flask(__name__)
 def webpage():
     return render_template('webpage.html')
 
-@app.route('/submit', methods=['POST', 'GET'])
+@app.route('/submit', methods=['POST'])
 def submit():
     num_stops = request.form.get('numStops')
     num_stops = int(num_stops)
     cities = [request.form.get(f'location{i + 1}') for i in range(int(num_stops))]  # Get the list of cities from the form
     route_chosen = request.form.get('routeType')
+
+    '''variables = []
+    for i in range(len(cities)):
+        variables.append(f'city_{i + 1}')
+        
+    for i in range(len(cities)):
+        variables[i] = cities[i]'''
+
+    # formatted_cities = {f'city_{i + 1}': city for i, city in enumerate(cities)}
 
     # Check if cities list is not empty
     if not cities:
@@ -70,6 +79,15 @@ def submit():
 
     optimal_route = replace_spaces_with_underscores_in_city_names(optimal_route)
     google_maps_url = generate_google_maps_url(optimal_route)
+
+    '''template_vars = {
+        'url': google_maps_url,
+        'num_stops': num_stops,
+        'route_type': route_chosen
+    }
+    template_vars.update(formatted_cities)
+
+    print(template_vars)'''
 
     return render_template('webpage.html', url=google_maps_url,num_stops=num_stops, locations=cities, route_type=route_chosen)
 
