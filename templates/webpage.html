@@ -38,11 +38,20 @@
             border: 1px solid #ccc;
             background-color: #f9f9f9;
         }
+        .url-container {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            word-wrap: break-word;
+        }
+        .url-container a {
+            word-wrap: break-word;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1 align="center">Route Optimization Service</h1>
+        <h1 align="center">Road Route Optimiser</h1>
         <h2 align="center">A Close Quarters Studios Product</h2>
         <h3 align="center">Powered by Google Maps API</h3>
         <form id="routeForm" action="/submit" method="post">
@@ -84,7 +93,7 @@
         </form>
 
         {% if url %}
-        <div class="url-display">
+        <div class="url-container">
             <p>Generated Route URL: <a href="{{ url }}" target="_blank">{{ url }}</a></p>
         </div>
         {% endif %}
